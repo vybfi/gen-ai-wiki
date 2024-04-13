@@ -7,7 +7,8 @@ categories: autogen
 
 ## 1. 简介
 
-AutoGen 是一个旨在简化使用大型语言模型（LLMs）开发应用程序的过程的框架。它基于促进多代理对话的概念，这些代理可以是 LLMs、工具或甚至人类输入，共同工作以执行任务。该框架强调易用性、模块化以及将人类反馈无缝集成到工作流中的能力，使开发人员能够以显著减少的努力和专业知识创建复杂的 LLM 应用。
+AutoGen 是一个旨在简化使用大型语言模型（LLMs）开发应用程序的过程的框架。它支持使用多个代理来开发 LLM 应用程序，这些代理可以相互交谈以解决任务。这些代理可以是 LLMs、工具，甚至人类输入。
+该框架强调易用性、模块化以及将人类反馈无缝集成到工作流中的能力，它使开发人员能够以显著减少的努力和专业知识创建复杂的 LLM 应用。
 本文的代码例子来源于官方文档([Microsoft on GitHub](https://microsoft.github.io/autogen/docs/tutorial/introduction/)) ([Microsoft on GitHub](https://microsoft.github.io/autogen/))。
 
 ### 1. 安装
@@ -35,12 +36,14 @@ pip install pyautogen
 
 代理（Agent）是一种能够在其环境中与其他代理发送和接收消息的实体。代理可以由模型（如 GPT-4 这样的大型语言模型）、代码执行器（如 IPython 内核）、人类，或这些以及其他可插拔和可自定义组件的组合来驱动。
 
-其中一个代理的例子是内置的 `**ConversableAgent**`，它支持以下组件：
+其中一个代理的例子是内置的 **`ConversableAgent`**，它支持以下组件：
 
 - 一系列的 LLMs
 - 一个代码执行器
 - 一个函数和工具执行器
-- 一个保持人在循环（human-in-the-loop）中的组件
+- 一个保持人在循环（HITP: human-in-the-loop）中的组件
+
+> 人在循环，也称人在回路。即有人参与的迭代，在下面代码中我们关闭了人类输入。
 
 ```python
 import os
@@ -57,7 +60,7 @@ agent = ConversableAgent(
 
 这段代码展示了如何使用 AutoGen 框架创建一个名为 **`chatbot`** 的 **`ConversableAgent`**。该代理配置了使用 GPT-4 模型，其中 API 密钥从环境变量中获取。代码执行功能被禁用，没有注册任何函数，并且设置为不请求人类输入（**`human_input_mode`** 设置为 "NEVER"）。这样配置的代理完全自动化，不涉及人类干预，适用于需要完全自动回复的场景。
 
-接下来可以通过调用 **`ConversableAgent`** 的 **`generate_reply`** 方法生成对消息的回复。在此例中，传入的消息内容是用户（"role": "user"）请求：“Tell me a joke.”（告诉我一个笑话）。然后，使用 **`print`** 函数打印出代理的回应。这允许检验代理如何利用其配置（如LLM模型）来生成自然语言回应。
+接下来可以通过调用 **`ConversableAgent`** 的 **`generate_reply`** 方法生成对消息的回复。在此例中，传入的消息内容是用户（"role": "user"）请求：“Tell me a joke.”（告诉我一个笑话）。然后，使用 **`print`** 函数打印出代理的回应。这允许检查代理如何利用其配置（如LLM模型）来生成自然语言回应。
 
 ```python
 reply = agent.generate_reply(messages=[{"content": "Tell me a joke.", "role": "user"}])
@@ -96,9 +99,9 @@ joe = ConversableAgent(
 )
 ```
 
-这段代码主要用于创建两个具有不同特性的聊天机器人代理（Cathy 和 Joe）。每个代理都被赋予了一个角色，即他们是一组喜剧演员的一部分，这可能影响他们生成的回复内容的风格和类型。通过调整 **`llm_config`** 中的 **`temperature`** 参数，可以控制每个代理回复的随机性和创造性，温度越高，回复越新颖和不可预测。这两个代理都设置为不需要人类输入，意味着他们将完全自动地生成回答。这样的设置使得这两个代理适用于自动化的娱乐对话场景，例如自动进行喜剧表演或对话。
+这段代码主要用于创建两个具有不同特性的聊天机器人代理（Cathy 和 Joe）。每个代理都被赋予了一个角色，即他们是一组喜剧演员的一部分，这会在一定程度上影响他们生成的回复内容的风格和类型。通过调整 **`llm_config`** 中的 **`temperature`** 参数，可以控制每个代理回复的随机性和创造性，温度越高，回复越新颖和不可预测。这两个代理都设置为不需要人类输入，意味着他们将完全自动地生成回答。这样的设置使得这两个代理适用于自动化的娱乐对话场景，例如自动进行喜剧表演或对话。
 
-我们可以使用 AutoGen 框架中的 **`ConversableAgent`** 类型的代理进行对话初始化。在这个示例中，代理 Joe 向代理 Cathy 发起对话请求，内容是“Cathy, tell me a joke.”（Cathy, 告诉我一个笑话）。**`max_turns=2`** 参数指定了对话的最大回合数为2，这意味着对话将在两个回合后自动结束，无论是否达到了自然的结尾。
+我们可以使用我们刚才创建的 AutoGen 框架中的 **`ConversableAgent`** 类型的代理（即joe，canthy）进行对话初始化。在这个示例中，我们使用代理 Joe 向代理 Cathy 发起对话请求，内容是“Cathy, tell me a joke.”（Cathy, 告诉我一个笑话）。其中**`max_turns=2`** 参数指定了对话的最大回合数为2，这意味着对话将在两个回合后自动结束，无论是否达到了自然的结尾。
 
 ```python
 result = joe.initiate_chat(cathy, message="Cathy, tell me a joke.", max_turns=2)
